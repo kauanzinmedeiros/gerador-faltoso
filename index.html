@@ -1268,10 +1268,9 @@
          * COMPARAÇÃO
          * ============================================================
          *
-         * Se os dois registros têm nome, a identificação exige nome
-         * completo normalizado igual. O número só é usado como critério
-         * quando o nome está ausente em pelo menos um dos registros,
-         * evitando confundir familiares que compartilham telefone.
+         * Considera o cadastro encontrado se o nome completo normalizado
+         * OU o telefone normalizado coincidirem. Isso permite encontrar
+         * variações de nome quando o telefone está correto nos dois arquivos.
          */
 
         function pacienteExisteNoCadastro(paciente) {
@@ -1283,13 +1282,13 @@
                     cadastro.nomeNormalizado || cadastro.nome
                 );
 
-                if (nomePlanilha && nomeCadastro) {
-                    return nomePlanilha === nomeCadastro;
-                }
-
                 const telefoneCadastro = normalizarTelefone(cadastro.telefone);
-                return Boolean(telefonePlanilha && telefoneCadastro) &&
+                const nomeCoincide = Boolean(nomePlanilha && nomeCadastro) &&
+                    nomePlanilha === nomeCadastro;
+                const telefoneCoincide = Boolean(telefonePlanilha && telefoneCadastro) &&
                     telefonePlanilha === telefoneCadastro;
+
+                return nomeCoincide || telefoneCoincide;
             });
         }
 
