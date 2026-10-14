@@ -1208,7 +1208,7 @@
                  * e antes do próximo registro.
                  */
 
-                let telefoneEncontrado = "";
+                const telefonesEncontrados = [];
 
 
                 for (
@@ -1225,7 +1225,7 @@
                      * Chegou no próximo paciente.
                      */
 
-                        const proximoNome =
+                    const proximoNome =
                         proximaLinha.match(
                             /^NOME\s*\.{0,}\s*:\s*(.+)$/i
                         );
@@ -1245,20 +1245,19 @@
                     }
 
 
-                    const telefoneMatch =
-                        proximaLinha.match(
-                            /FONE\s*-\s*1\s*:\s*(.+?)(?:\s+FONE\s*-\s*2|$)/i
-                        );
+                    const telefoneRegex =
+                        /(?:FONE|TELEFONE|CELULAR|WHATSAPP|FIXO)\s*(?:-\s*[12])?\s*:\s*([+\d(][\d\s()./-]{6,})/gi;
 
+                    let telefoneMatch;
 
-                    if (telefoneMatch) {
+                    while (
+                        (telefoneMatch = telefoneRegex.exec(proximaLinha)) !== null
+                    ) {
+                        const telefone = normalizarTelefone(telefoneMatch[1]);
 
-                        telefoneEncontrado =
-                            normalizarTelefone(
-                                telefoneMatch[1]
-                            );
-
-                        break;
+                        if (telefone.length >= 8 && !telefonesEncontrados.includes(telefone)) {
+                            telefonesEncontrados.push(telefone);
+                        }
                     }
                 }
 
@@ -1272,7 +1271,10 @@
                         nomeNormalizado,
 
                     telefone:
-                        telefoneEncontrado
+                        telefonesEncontrados[0] || "",
+
+                    telefones:
+                        telefonesEncontrados
                 });
             }
 
@@ -1300,11 +1302,18 @@
                     cadastro.nomeNormalizado || cadastro.nome
                 );
 
-                const telefoneCadastro = normalizarTelefone(cadastro.telefone);
+                const telefonesCadastro = Array.isArray(cadastro.telefones)
+                    ? cadastro.telefones
+                    : [cadastro.telefone];
+
                 const nomeCoincide = Boolean(nomePlanilha && nomeCadastro) &&
                     nomePlanilha === nomeCadastro;
-                const telefoneCoincide = Boolean(telefonePlanilha && telefoneCadastro) &&
-                    telefonePlanilha === telefoneCadastro;
+                const telefoneCoincide = Boolean(telefonePlanilha) &&
+                    telefonesCadastro.some(telefone => {
+                        const telefoneNormalizado = normalizarTelefone(telefone);
+                        return Boolean(telefoneNormalizado) &&
+                            telefonePlanilha === telefoneNormalizado;
+                    });
 
                 return nomeCoincide || telefoneCoincide;
             });
@@ -1699,6 +1708,12 @@
                     "Registros extraídos dos PDFs: " +
                     registrosCadastro.length +
                     "\n" +
+                    "Registros com telefone extraído: " +
+                    registrosCadastro.filter(registro =>
+                        (Array.isArray(registro.telefones) && registro.telefones.length > 0) ||
+                        Boolean(registro.telefone)
+                    ).length +
+                    "\n" +
                     "Agendamentos encontrados no cadastro: " +
                     encontradosCadastro +
                     "\n" +
@@ -2040,7 +2055,7 @@
 
 
             atualizarStatus(
-                "Datas e interesses são opcionais. Selecione os arquivos para começar."
+                "Datas e interesses são opcionais. Selecione os arquivos para começar!"
             );
         }
     </script>
