@@ -201,7 +201,7 @@
                 </div>
 
                 <div class="estatistica">
-                    <span>Pacientes no cadastro</span>
+                    <span>Registros lidos dos PDFs</span>
                     <strong id="totalCadastro">0</strong>
                 </div>
 
@@ -1164,7 +1164,7 @@
 
                 const match =
                     linha.match(
-                        /^NOME\s*\.{2,}\s*:\s*(.+)$/i
+                        /^NOME\s*\.{0,}\s*:\s*(.+)$/i
                     );
 
 
@@ -1225,9 +1225,9 @@
                      * Chegou no próximo paciente.
                      */
 
-                    const proximoNome =
+                        const proximoNome =
                         proximaLinha.match(
-                            /^NOME\s*\.{2,}\s*:\s*(.+)$/i
+                            /^NOME\s*\.{0,}\s*:\s*(.+)$/i
                         );
 
 
@@ -1648,7 +1648,7 @@
                 document.getElementById(
                     "totalCadastro"
                 ).textContent =
-                    encontradosCadastro;
+                    registrosCadastro.length;
 
 
                 document.getElementById(
@@ -1696,7 +1696,10 @@
                     "Agendamentos após os filtros: " +
                     agendamentosNoPeriodo.length +
                     "\n" +
-                    "Encontrados no cadastro: " +
+                    "Registros extraídos dos PDFs: " +
+                    registrosCadastro.length +
+                    "\n" +
+                    "Agendamentos encontrados no cadastro: " +
                     encontradosCadastro +
                     "\n" +
                     "Não encontrados no cadastro: " +
